@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import br.com.fabio.productapi.dtos.ProductDTO;
 import br.com.fabio.productapi.dtos.mapper.ProductMapper;
@@ -45,6 +47,13 @@ public class ProductService {
 		public void delete(Long productCode) throws ProductNotFoundException {
 			ProductDTO productDTO = findById(productCode);
 			productRepository.deleteById(productDTO.getProductCode());
+		}
+		
+		public ProductDTO update(Long productCode, ProductDTO productDTO) throws ProductNotFoundException{
+			findById(productCode);
+			productRepository.save(productMapper.toModel(productDTO));
+			return productDTO;
+			
 		}
 		
 		

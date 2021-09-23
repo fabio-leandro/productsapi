@@ -2,12 +2,12 @@ package br.com.fabio.productapi.controllers;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Collections;
-import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,6 +35,8 @@ import br.com.fabio.productapi.services.ProductService;
 
 @ExtendWith(MockitoExtension.class)
 public class ProductControllerTest {
+	
+	private static final long PRODUCT_CODE_INVALID = 2L;
 	
 	@Autowired
 	private MockMvc mockMvc;
@@ -123,13 +125,11 @@ public class ProductControllerTest {
 	@Test
 	void whenGETCalledWithParameterProductCodeThenReturnProductNotFoundException() throws Exception {
 		
-		//given
-		ProductDTO productDTO = new ProductBuilder().toProductDTO();
 		//when
-		when(productService.findById(productDTO.getProductCode())).thenThrow(ProductNotFoundException.class);
+		when(productService.findById(PRODUCT_CODE_INVALID)).thenThrow(ProductNotFoundException.class);
 		
 		//then
-		this.mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/products/"+productDTO.getProductCode())
+		this.mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/products/"+PRODUCT_CODE_INVALID)
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isNotFound());
 				
@@ -151,6 +151,56 @@ public class ProductControllerTest {
 				.andExpect(status().isNoContent());
 		
 	}
+	
+	@Test
+	void whenDeleteCalledAndProductNotFountThenReturnAException() throws Exception {
+		
+		// when
+		doThrow(ProductNotFoundException.class).when(productService).delete(PRODUCT_CODE_INVALID);
+		
+		// then
+		this.mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/products/" + PRODUCT_CODE_INVALID)
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound());
+	}
+	
+	@Test
+	void whenUpdateCalledThenReturnedStatusCodeOK() throws Exception {
+		
+		//given
+		ProductDTO productDTO = new ProductBuilder().toProductDTO();
+		
+		//when
+		when(productService.update(productDTO.getProductCode(), productDTO))
+		.thenReturn(productDTO);
+		
+		//then
+		this.mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/products/" + 
+		productDTO.getProductCode()).contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(productDTO)))
+				.andExpect(status().isCreated());
+		
+	}
+	
+	@Test
+	void whenPutCalledThenItShouldThrowException() throws Exception {
+		
+		//given
+		ProductDTO productDTO = new ProductBuilder().toProductDTO();
+		
+		//when
+		when(productService.update(PRODUCT_CODE_INVALID, productDTO))
+		.thenThrow(ProductNotFoundException.class);
+		
+		
+		//then
+		this.mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/products/" + 
+				PRODUCT_CODE_INVALID).contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(productDTO)))
+						.andExpect(status().isNotFound());
+		
+	}
+	
+	
 	
 
 }

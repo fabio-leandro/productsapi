@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -24,7 +24,6 @@ import com.fasterxml.jackson.core.JsonParseException;
 
 import br.com.fabio.productapi.cotrollers.validations.ProductValidationsErrors;
 import br.com.fabio.productapi.dtos.ProductDTO;
-import br.com.fabio.productapi.dtos.messages.ProductMessageDTO;
 import br.com.fabio.productapi.entities.Product;
 import br.com.fabio.productapi.exceptions.ProductNotFoundException;
 import br.com.fabio.productapi.services.ProductService;
@@ -58,7 +57,18 @@ public class ProductController {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void delete(@PathVariable  Long productCode) throws ProductNotFoundException{
 		productService.delete(productCode);
-	}	
+	}
+	
+	@PutMapping("/{productCode}")
+	public ResponseEntity<ProductDTO> update(@PathVariable Long productCode, 
+			@RequestBody @Valid ProductDTO productDTO) throws ProductNotFoundException{
+		
+		productService.update(productCode, productDTO);
+		
+		return ResponseEntity.status(HttpStatus.CREATED).body(productDTO);
+	}
+	
+	
 	
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(MethodArgumentNotValidException.class)

@@ -1,5 +1,6 @@
 package br.com.fabio.productapi.services;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.doNothing;
@@ -11,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -96,13 +98,39 @@ public class ProductServiceTest {
     void whenCalledItShouldBeDeletedProductWithInformedCode() throws ProductNotFoundException {
     	//given
     	ProductDTO productDTO = new ProductBuilder().toProductDTO();
-    	
+    	Product  product = productMapper.toModel(productDTO);
     	//when
-    	doNothing().when(productRepository).deleteById(productDTO.getProductCode());
+    	when(productRepository.findById(productDTO.getProductCode()))
+    	.thenReturn(Optional.of(product));
+    	doNothing().when(productRepository).deleteById(product.getProductCode());
     	
     	//then
-    	productService.delete(productDTO.getProductCode());
-    	verify(productRepository,times(1)).deleteById(productDTO.getProductCode());
+    	productService.delete(product.getProductCode());
+    	verify(productRepository,times(1)).deleteById(product.getProductCode());
     	
     }
+    
+    @Test
+    void whenCalledItShouldBeUpdatedProductWithInformedCode() throws Exception {
+    	
+    	//given
+    	ProductDTO productDTO = new ProductBuilder().toProductDTO();
+    	Product product = productMapper.toModel(productDTO);
+    	
+    	//when
+    	when(productRepository.findById(product.getProductCode()))
+    	.thenReturn(Optional.of(product));
+    	when(productRepository.save(product)).thenReturn(product);
+    	
+    	//then
+    	ProductDTO productUpdatedDto = productService
+    			.update(productDTO.getProductCode(),productDTO);
+    	
+    	MatcherAssert.assertThat(productUpdatedDto, equalTo(productDTO));
+    	
+    	
+    }
+    
+    
+    
 }
