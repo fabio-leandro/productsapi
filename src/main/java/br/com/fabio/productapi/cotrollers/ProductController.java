@@ -68,8 +68,6 @@ public class ProductController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(productDTO);
 	}
 	
-	
-	
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public Map<String, Object> handlerValidationException(MethodArgumentNotValidException ex){

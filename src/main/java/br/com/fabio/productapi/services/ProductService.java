@@ -51,8 +51,9 @@ public class ProductService {
 		
 		public ProductDTO update(Long productCode, ProductDTO productDTO) throws ProductNotFoundException{
 			findById(productCode);
-			productRepository.save(productMapper.toModel(productDTO));
-			return productDTO;
+			Product product = productMapper.toModel(productDTO);
+			productRepository.save(product);
+			return productMapper.toDTO(product);
 			
 		}
 		
